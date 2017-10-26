@@ -26,8 +26,8 @@ public class Server {
             DpReceive = new DatagramPacket(receive, receive.length);
             ds.receive(DpReceive);
             System.out.println("Client:-" + data(receive));
-            if (data(receive).toString().equals("bye")){
-                System.out.println("Client sent bye.....EXITING");
+            if (data(receive).toString().equals("exit")){
+                System.out.println("Client sent exit.....EXITING");
                 break;
             }
             receive = new byte[65535];
