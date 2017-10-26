@@ -69,12 +69,13 @@ public class Client {
                         break;
                     }
                     
-                }
-                
-                
-                        
+                }       
             }
             
         };
+        Thread recvMessage=new Thread(read);
+        Thread sendMessage=new Thread(write);
+        recvMessage.start();
+        sendMessage.start();
     }
 }
