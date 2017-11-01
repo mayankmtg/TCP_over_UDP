@@ -79,10 +79,16 @@ public class Sender {
                 }
                 
                 if(ackReceived && ackPack.getAckInt()==seqNum){
-                    System.out.println("Ack Received: "+seqNum);
+                    System.out.println("Ack Received: "+ackPack.getAckInt());
                     break;
                 }
                 else{
+                    if(ackReceived){
+                        System.out.println("Ack Received: "+ackPack.getAckInt());
+                    }
+                    else{
+                        System.err.println("Time Out");
+                    }
                     p.sendPacket(ds, ip, port);
                     ackReceived=false;
                 }

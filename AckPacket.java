@@ -36,6 +36,7 @@ public class AckPacket {
         this.ackByte[1]=(byte)(this.ackNum);
     }
     public void sendAck(DatagramSocket ds, InetAddress ip, int port) throws IOException{
+        //before calling make sure that both ackNum and ackByte are filled
         DatagramPacket ackPack=new DatagramPacket(this.ackByte, this.ackByte.length, ip, port);
         ds.send(ackPack);
 //        System.out.println("Sent Ack "+ackNum);
