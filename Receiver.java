@@ -40,7 +40,6 @@ public class Receiver {
         
         int seqNum=0;
         int lastSeqNum=0;
-        boolean false_flag=true;
         while(!lastMessage){
             byte[] message = new byte[1024];
             byte[] fileArray = new byte[1021];
@@ -54,10 +53,6 @@ public class Receiver {
             AckPacket ackPack=new AckPacket();
             Packet p=new Packet(message);
             seqNum=p.seqNum;
-            if(seqNum==125 && false_flag){
-                seqNum--;
-                false_flag=false;
-            }
             if(seqNum==lastSeqNum+1){
                 lastSeqNum=seqNum;
                 for (int i=0; i < 1021 ; i++) {
