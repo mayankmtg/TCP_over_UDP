@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.DatagramSocket;
+import java.net.SocketTimeoutException;
 
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -46,7 +47,7 @@ public class Sender {
         boolean messageFlag = false;
         int i;
         int n=fileArray.length;
-        for(i=0; i<n;i=i+1021) {
+        for(i=0; i<n;i+=1021) {
             seqNum++;
             Packet p=new Packet(seqNum);
             int nextStart=i+1021;
@@ -66,11 +67,27 @@ public class Sender {
                 }
             }
             p.sendPacket(ds, ip, port);
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            boolean ackReceived=false;
+            while(!ackReceived){
+                AckPacket ackPack=new AckPacket();
+                try{
+                    ackReceived=ackPack.receiveAck(ds);
+                }
+                catch(SocketTimeoutException e){
+                    System.out.println("Socket timed out waiting for an ack");
+                    ackReceived = false;
+                }
+                
+                if(ackReceived && ackPack.getAckInt()==seqNum){
+                    System.out.println("Ack Received: "+seqNum);
+                    break;
+                }
+                else{
+                    p.sendPacket(ds, ip, port);
+                    ackReceived=false;
+                }
             }
+            
         }
 
         ds.close();

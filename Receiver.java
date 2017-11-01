@@ -38,22 +38,37 @@ public class Receiver {
         
         boolean lastMessage = false;
         
-        int seqNum;
-        
+        int seqNum=0;
+        int lastSeqNum=0;
+        boolean false_flag=true;
         while(!lastMessage){
             byte[] message = new byte[1024];
             byte[] fileArray = new byte[1021];
             
             DatagramPacket receivedPacket = new DatagramPacket(message, message.length);
+            ds.setSoTimeout(0);
             ds.receive(receivedPacket);
+            c_ip = receivedPacket.getAddress();
+            c_port = receivedPacket.getPort();
             message = receivedPacket.getData();
-            
+            AckPacket ackPack=new AckPacket();
             Packet p=new Packet(message);
-            for (int i=0; i < 1021 ; i++) {
-                fileArray[i] = p.getPayload(i+3);
+            seqNum=p.seqNum;
+            if(seqNum==125 && false_flag){
+                seqNum--;
+                false_flag=false;
             }
-            
-            os.write(fileArray);
+            if(seqNum==lastSeqNum+1){
+                lastSeqNum=seqNum;
+                for (int i=0; i < 1021 ; i++) {
+                    fileArray[i] = p.getPayload(i+3);
+                }
+                os.write(fileArray);
+            }
+            ackPack.setAckNum(lastSeqNum);
+            ackPack.setAckBytes();
+            ackPack.sendAck(ds, c_ip, c_port);
+                
             
             if(p.lastFlag==true){
                 os.close();
