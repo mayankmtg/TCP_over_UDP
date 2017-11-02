@@ -55,7 +55,7 @@ public class Receiver {
             Packet p=new Packet(message);
             seqNum=p.seqNum;
             if(seqNum==125 && false_flag){
-                seqNum--;
+                seqNum=2;
                 false_flag=false;
             }
             if(seqNum==lastSeqNum+1){
@@ -79,74 +79,5 @@ public class Receiver {
         }
         ds.close();
         System.out.println("File " + fileName + " has been received.");
-        
-        
-//        
-//        Runnable read=new Runnable(){
-//            @Override
-//            public void run() {
-//                System.out.println("Server Listening");
-//                DatagramPacket dp = null;
-//                byte[] receive = new byte[1024];
-//                while(true){
-//                    dp = new DatagramPacket(receive, receive.length);
-//                    try {
-//                        ds.receive(dp);
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(Receiver.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                    c_ip=dp.getAddress();
-//                    c_port=dp.getPort();
-//                    
-//                    System.out.println("Client:-" + data(receive));
-//                    if(data(receive).toString().equals("exit")){
-//                        System.out.println("Client sent exit.....EXITING");
-//                        break;
-//                    }
-//                    receive = new byte[65535];
-//                }
-//            }
-//            
-//        };
-//        
-//        Runnable write=new Runnable(){
-//            @Override
-//            public void run() {
-//                System.out.println("Type Message");
-//                DatagramPacket dp = null;
-//                while(true){
-//                    String inp=input.nextLine();
-//                    byte[] send = inp.getBytes();
-//                    dp = new DatagramPacket(send, send.length, c_ip,c_port);
-//                    try {
-//                        ds.send(dp);
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(Receiver.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
-//                
-//                
-//            }
-//            
-//        };
-//        Thread recvMessage=new Thread(read);
-//        Thread sendMessage=new Thread(write);
-//        recvMessage.start();
-//        sendMessage.start();
-        
-        
     }
-    
-//    public static StringBuilder data(byte[] a){
-//        if(a==null){
-//            return null;
-//        }
-//        StringBuilder ret = new StringBuilder();
-//        int i = 0;
-//        while(a[i]!=0){
-//            ret.append((char)a[i]);
-//            i++;
-//        }
-//        return ret;
-//    }
 }

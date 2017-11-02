@@ -14,6 +14,7 @@ import java.io.InputStream;
 
 import java.net.DatagramSocket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -47,6 +48,7 @@ public class Sender {
         boolean messageFlag = false;
         int i;
         int n=fileArray.length;
+        ArrayList<Packet> packetList=new ArrayList<Packet>();
         for(i=0; i<n;i+=1021) {
             seqNum++;
             Packet p=new Packet(seqNum);
@@ -66,9 +68,51 @@ public class Sender {
                     p.setPayload(j+3, fileArray[i+j]);
                 }
             }
-            p.sendPacket(ds, ip, port);
-            boolean ackReceived=false;
-            while(!ackReceived){
+            packetList.add(p);
+//            p.sendPacket(ds, ip, port);
+//            boolean ackReceived=false;
+//            while(!ackReceived){
+//                AckPacket ackPack=new AckPacket();
+//                try{
+//                    ackReceived=ackPack.receiveAck(ds);
+//                }
+//                catch(SocketTimeoutException e){
+//                    System.out.println("Socket timed out waiting for an ack");
+//                    ackReceived = false;
+//                }
+//                
+//                if(ackReceived && ackPack.getAckInt()==seqNum){
+//                    System.out.println("Ack Received: "+ackPack.getAckInt());
+//                    break;
+//                }
+//                else{
+//                    if(ackReceived){
+//                        System.out.println("Ack Received: "+ackPack.getAckInt());
+//                    }
+//                    else{
+//                        System.err.println("Time Out");
+//                    }
+//                    p.sendPacket(ds, ip, port);
+//                    ackReceived=false;
+//                }
+//            }
+        }
+        int windowSize=5;
+        ArrayList<Integer> ackRegister=new ArrayList<Integer>();
+        int start=0;
+        boolean exitCondition=false;
+        boolean cumAck=true;
+        while(!exitCondition){
+            cumAck=true;
+            for(i=0;i<windowSize;i++){
+                if(start+i>=packetList.size()){
+                    exitCondition=true;
+                    break;
+                }
+                Packet p=packetList.get(start+i);
+                p.sendPacket(ds, ip, port);
+                
+                boolean ackReceived=false;
                 AckPacket ackPack=new AckPacket();
                 try{
                     ackReceived=ackPack.receiveAck(ds);
@@ -77,10 +121,9 @@ public class Sender {
                     System.out.println("Socket timed out waiting for an ack");
                     ackReceived = false;
                 }
-                
-                if(ackReceived && ackPack.getAckInt()==seqNum){
+
+                if(ackReceived && ackPack.getAckInt()>=p.seqNum){
                     System.out.println("Ack Received: "+ackPack.getAckInt());
-                    break;
                 }
                 else{
                     if(ackReceived){
@@ -89,62 +132,22 @@ public class Sender {
                     else{
                         System.err.println("Time Out");
                     }
-                    p.sendPacket(ds, ip, port);
+                    //retransmission
+//                    p.sendPacket(ds, ip, port);
                     ackReceived=false;
                 }
+                
+                if(!ackReceived){
+                    cumAck=false;
+                }
             }
-            
+            if(cumAck){
+                start=start+windowSize;
+            }
         }
-
+            
         ds.close();
         System.out.println("File " + fileName + " has been sent");
-//        
-//        Runnable read = new Runnable(){
-//            @Override
-//            public void run() {
-//                System.out.println("Client Listening");
-//                byte byte_buffer_receive[] = null;
-//                while(true){
-//                    byte_buffer_receive=new byte[1024];
-//                    DatagramPacket dp1=new DatagramPacket(byte_buffer_receive, byte_buffer_receive.length);
-//                    try {
-//                        ds.receive(dp1);
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                    String received_data=new String(dp1.getData());
-//                    System.out.println(received_data);
-//                }
-//                
-//            }
-//            
-//        };
-//        Runnable write=new Runnable(){
-//            @Override
-//            public void run() {
-//                System.out.println("Type Message:");
-//                byte byte_buffer_send[] = null;
-//                while(true){
-//                    String inp=input.nextLine();
-//                    byte_buffer_send = inp.getBytes();
-//                    DatagramPacket dp=new DatagramPacket(byte_buffer_send, byte_buffer_send.length, ip, port);
-//                    try {
-//                        ds.send(dp);
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                    if (inp.equals("exit")){
-//                        break;
-//                    }
-//                    
-//                }       
-//            }
-//            
-//        };
-//        Thread recvMessage=new Thread(read);
-//        Thread sendMessage=new Thread(write);
-//        recvMessage.start();
-//        sendMessage.start();
     }
     
 }
