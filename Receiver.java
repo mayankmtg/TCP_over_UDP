@@ -57,6 +57,7 @@ public class Receiver {
             if(seqNum==123 && false_flag){
                 seqNum=2;
                 false_flag=false;
+                continue;
             }
             if(seqNum==lastSeqNum+1){
                 lastSeqNum=seqNum;
