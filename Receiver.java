@@ -54,7 +54,7 @@ public class Receiver {
             AckPacket ackPack=new AckPacket();
             Packet p=new Packet(message);
             seqNum=p.seqNum;
-            if(seqNum==125 && false_flag){
+            if(seqNum==123 && false_flag){
                 seqNum=2;
                 false_flag=false;
             }
