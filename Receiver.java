@@ -40,6 +40,7 @@ public class Receiver {
         
         int seqNum=0;
         int lastSeqNum=0;
+        boolean file_flag=false;
         boolean false_flag=true;
         while(!lastMessage){
             byte[] message = new byte[1024];
@@ -57,7 +58,7 @@ public class Receiver {
             if(seqNum==123 && false_flag){
                 seqNum=2;
                 false_flag=false;
-                continue;
+//                continue;
             }
             if(seqNum==lastSeqNum+1){
                 lastSeqNum=seqNum;
@@ -65,13 +66,16 @@ public class Receiver {
                     fileArray[i] = p.getPayload(i+3);
                 }
                 os.write(fileArray);
+                file_flag=true;
+            }
+            else{
+                file_flag=false;
             }
             ackPack.setAckNum(lastSeqNum);
             ackPack.setAckBytes();
             ackPack.sendAck(ds, c_ip, c_port);
-                
             
-            if(p.lastFlag==true){
+            if(p.lastFlag==true && file_flag){
                 os.close();
                 ds.close();
                 lastMessage = false;

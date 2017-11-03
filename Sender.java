@@ -69,33 +69,6 @@ public class Sender {
                 }
             }
             packetList.add(p);
-//            p.sendPacket(ds, ip, port);
-//            boolean ackReceived=false;
-//            while(!ackReceived){
-//                AckPacket ackPack=new AckPacket();
-//                try{
-//                    ackReceived=ackPack.receiveAck(ds);
-//                }
-//                catch(SocketTimeoutException e){
-//                    System.out.println("Socket timed out waiting for an ack");
-//                    ackReceived = false;
-//                }
-//                
-//                if(ackReceived && ackPack.getAckInt()==seqNum){
-//                    System.out.println("Ack Received: "+ackPack.getAckInt());
-//                    break;
-//                }
-//                else{
-//                    if(ackReceived){
-//                        System.out.println("Ack Received: "+ackPack.getAckInt());
-//                    }
-//                    else{
-//                        System.err.println("Time Out");
-//                    }
-//                    p.sendPacket(ds, ip, port);
-//                    ackReceived=false;
-//                }
-//            }
         }
         int windowSize=1;
         ArrayList<Integer> ackRegister=new ArrayList<Integer>();
@@ -111,22 +84,29 @@ public class Sender {
             int prevAck=0;
             System.out.println("Window Size: "+windowSize);
             for(i=0;i<windowSize;i++){
+                if(start+i>=packetList.size()){
+                    exitCondition=true;
+                    break;
+                }
+                Packet p=packetList.get(start+i);
+//                lastSeq=p.seqNum;
+                p.sendPacket(ds, ip, port);
+            }
+            for(i=0;i<windowSize;i++){
                 prevAck=currentAck;
+                boolean ackReceived=false;
+                AckPacket ackPack=new AckPacket();
                 if(start+i>=packetList.size()){
                     exitCondition=true;
                     break;
                 }
                 Packet p=packetList.get(start+i);
                 lastSeq=p.seqNum;
-                p.sendPacket(ds, ip, port);
-                
-                boolean ackReceived=false;
-                AckPacket ackPack=new AckPacket();
                 try{
                     ackReceived=ackPack.receiveAck(ds);
                 }
                 catch(SocketTimeoutException e){
-                    System.out.println("Socket timed out waiting for an ack");
+                    System.out.println("Socket timed out waiting for an ack "+p.seqNum);
                     ackReceived = false;
                 }
                 if(ackReceived){
@@ -150,7 +130,6 @@ public class Sender {
                     if(fastRetransmitCounter==2){
                         consecAck=true;
                         System.out.println("Fast Retransmit");
-                        break;
                     }
                 }
                 else{
