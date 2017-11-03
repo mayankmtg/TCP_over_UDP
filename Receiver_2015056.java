@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  *
  * @author mayank
  */
-public class Receiver {
+public class Receiver_2015056 {
     static int c_port;
     static final int packetSize=1024;
     static InetAddress c_ip=null;
@@ -35,16 +35,16 @@ public class Receiver {
         System.out.println("File Name:");
         String fileName=input.next();
         System.out.println("Waiting for Connection");
-        SynPack syn=new SynPack();
+        SynPack_2015056 syn=new SynPack_2015056();
         ds.setSoTimeout(0);
         DatagramPacket type=syn.receiveSyn(ds);
         c_ip=type.getAddress();
         c_port=type.getPort();
         System.out.println("SYN Recieved");
-        SynPack synAck=new SynPack(1);
+        SynPack_2015056 synAck=new SynPack_2015056(1);
         System.out.println("Sending SYN-ACK");
         synAck.sendSyn(ds, c_ip, c_port);
-        SynPack ackSyn=new SynPack();
+        SynPack_2015056 ackSyn=new SynPack_2015056();
         ds.setSoTimeout(0);
         DatagramPacket ack_type=syn.receiveSyn(ds);
         System.out.println("ACK Recieved");
@@ -72,8 +72,8 @@ public class Receiver {
             c_ip = receivedPacket.getAddress();
             c_port = receivedPacket.getPort();
             message = receivedPacket.getData();
-            AckPacket ackPack=new AckPacket();
-            Packet p=new Packet(message);
+            AckPacket_2015056 ackPack=new AckPacket_2015056();
+            Packet_2015056 p=new Packet_2015056(message);
             seqNum=p.seqNum;
             if(seqNum==136 && false_flag){
                 seqNum=2;

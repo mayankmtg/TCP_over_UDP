@@ -14,19 +14,19 @@ import java.net.InetAddress;
  *
  * @author mayank
  */
-public class Packet{
+public class Packet_2015056{
     public byte message[]=new byte[1024];
 //    message[0] -> seq number
 //    message[1] -> seq number
 //    message[2] -> flag
     int seqNum;
     boolean lastFlag;
-    public Packet(int seq){
+    public Packet_2015056(int seq){
         this.seqNum=seq;
         message[0]=(byte)(seq>>8);
         message[1]=(byte)(seq);
     }
-    public Packet(byte message[]){
+    public Packet_2015056(byte message[]){
         this.message=message;
         this.seqNum=((message[0] & 0xff) << 8)+(message[1] & 0xff);
         

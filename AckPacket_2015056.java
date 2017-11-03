@@ -16,7 +16,7 @@ import java.net.SocketTimeoutException;
  *
  * @author mayank
  */
-public class AckPacket {
+public class AckPacket_2015056 {
     byte[] ackByte=new byte[2];
     int ackNum;
     public byte[] getAckBytes(){

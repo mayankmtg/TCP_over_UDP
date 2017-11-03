@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author mayank
  */
-public class Sender {
+public class Sender_2015056 {
 
     /**
      * @param args the command line arguments
@@ -40,15 +40,15 @@ public class Sender {
         System.out.println("File Name:");
         String fileName=input.next();
         System.out.println("Making Connection...");
-        SynPack sp=new SynPack(0);
+        SynPack_2015056 sp=new SynPack_2015056(0);
         System.out.println("Sending SYN");
         sp.sendSyn(ds, ip, port);
-        SynPack synAckPack=new SynPack();
+        SynPack_2015056 synAckPack=new SynPack_2015056();
         ds.setSoTimeout(0);
         DatagramPacket type=synAckPack.receiveSyn(ds);
 
         System.out.println("SYN-ACK Received\nSending ACK");
-        SynPack ackSyn=new SynPack(2);
+        SynPack_2015056 ackSyn=new SynPack_2015056(2);
         ackSyn.sendSyn(ds, ip, port);
         System.out.println("Sending the file");
         
@@ -62,10 +62,10 @@ public class Sender {
         boolean messageFlag = false;
         int i;
         int n=fileArray.length;
-        ArrayList<Packet> packetList=new ArrayList<Packet>();
+        ArrayList<Packet_2015056> packetList=new ArrayList<Packet_2015056>();
         for(i=0; i<n;i+=packetSize-3) {
             seqNum++;
-            Packet p=new Packet(seqNum);
+            Packet_2015056 p=new Packet_2015056(seqNum);
             int nextStart=i+packetSize-3;
             int j;
             if(nextStart >= n){
@@ -107,7 +107,7 @@ public class Sender {
                     }
                     break;
                 }
-                Packet p=packetList.get(start+i);
+                Packet_2015056 p=packetList.get(start+i);
 //                lastSeq=p.seqNum;
                 if(Math.random()>lossProb){
                     p.sendPacket(ds, ip, port);
@@ -119,14 +119,14 @@ public class Sender {
             for(i=0;i<windowSize;i++){
                 prevAck=currentAck;
                 boolean ackReceived=false;
-                AckPacket ackPack=new AckPacket();
+                AckPacket_2015056 ackPack=new AckPacket_2015056();
                 if(start+i>=packetList.size()){
                     if(lastPackSent){
                         exitCondition=true;
                     }
                     break;
                 }
-                Packet p=packetList.get(start+i);
+                Packet_2015056 p=packetList.get(start+i);
                 lastSeq=p.seqNum;
                 try{
                     ackReceived=ackPack.receiveAck(ds);

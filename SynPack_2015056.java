@@ -15,16 +15,16 @@ import java.net.SocketException;
  *
  * @author mayank
  */
-public class SynPack {
+public class SynPack_2015056 {
     boolean syn;
     boolean syn_ack;
     boolean ack;
-    public SynPack(){
+    public SynPack_2015056(){
         this.syn=false;
         this.syn_ack=false;
         this.ack=false;
     }
-    public SynPack(int type){
+    public SynPack_2015056(int type){
         if(type==0){
             syn=true;
             syn_ack=false;
