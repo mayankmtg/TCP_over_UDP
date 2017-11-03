@@ -29,6 +29,8 @@ public class Sender {
     /**
      * @param args the command line arguments
      */
+    static final int packetSize=1024;
+    static final double lossProb=0.1;
     public static void main(String[] args) throws IOException{
         Scanner input = new Scanner(System.in);
         DatagramSocket ds = new DatagramSocket();
@@ -50,20 +52,21 @@ public class Sender {
         ackSyn.sendSyn(ds, ip, port);
         System.out.println("Sending the file");
         
-        File file = new File(fileName); 
-        
+        File file = new File(fileName);
+        int cumAck; // Not Required Anymore
         InputStream is = new FileInputStream(file);
         byte[] fileArray = new byte[(int)file.length()];
-        is.read(fileArray);
+        cumAck=is.read(fileArray);
         int seqNum = 0;
+        cumAck=0;
         boolean messageFlag = false;
         int i;
         int n=fileArray.length;
         ArrayList<Packet> packetList=new ArrayList<Packet>();
-        for(i=0; i<n;i+=1021) {
+        for(i=0; i<n;i+=packetSize-3) {
             seqNum++;
             Packet p=new Packet(seqNum);
-            int nextStart=i+1021;
+            int nextStart=i+packetSize-3;
             int j;
             if(nextStart >= n){
                 messageFlag = true;
@@ -85,6 +88,9 @@ public class Sender {
         ArrayList<Integer> ackRegister=new ArrayList<Integer>();
         int start=0;
         boolean exitCondition=false;
+        int lastDropSeqNum=128;
+        boolean lastPackSent=false;
+        boolean slowStart=true; // TCP Slow Start
         while(!exitCondition){
             int maxAck=0;
             int lastSeq=0;
@@ -96,19 +102,28 @@ public class Sender {
             System.out.println("Window Size: "+windowSize);
             for(i=0;i<windowSize;i++){
                 if(start+i>=packetList.size()){
-                    exitCondition=true;
+                    if(lastPackSent){
+                        exitCondition=true;
+                    }
                     break;
                 }
                 Packet p=packetList.get(start+i);
 //                lastSeq=p.seqNum;
-                p.sendPacket(ds, ip, port);
+                if(Math.random()>lossProb){
+                    p.sendPacket(ds, ip, port);
+                }
+                else{
+                    p.dropPacket();
+                }
             }
             for(i=0;i<windowSize;i++){
                 prevAck=currentAck;
                 boolean ackReceived=false;
                 AckPacket ackPack=new AckPacket();
                 if(start+i>=packetList.size()){
-                    exitCondition=true;
+                    if(lastPackSent){
+                        exitCondition=true;
+                    }
                     break;
                 }
                 Packet p=packetList.get(start+i);
@@ -117,7 +132,9 @@ public class Sender {
                     ackReceived=ackPack.receiveAck(ds);
                 }
                 catch(SocketTimeoutException e){
+                    slowStart=false;
                     System.out.println("Socket timed out waiting for an ack "+p.seqNum);
+                    lastPackSent=false;
                     ackReceived = false;
                 }
                 if(ackReceived){
@@ -131,27 +148,43 @@ public class Sender {
                     }
                     
                     if(currentAck>=p.seqNum){
+                        if(p.lastFlag && p.seqNum==currentAck){
+                            lastPackSent=true;
+                        }
                         System.out.println("Ack Received: "+currentAck);
                     }
                     else{
                         System.out.println("Ack Received: "+currentAck);
                         ackReceived=false;
+                        lastPackSent=false;
+                        slowStart=false;
                     }
                     
                     if(fastRetransmitCounter==2){
                         consecAck=true;
+                        lastPackSent=false;
                         System.out.println("Fast Retransmit");
                     }
                 }
                 else{
                     timeout=true;
+                    slowStart=true;
+                    lastPackSent=false;
                     System.err.println("Time Out");
                 }
             }
-            if(lastSeq==maxAck){
+            if(lastSeq==maxAck && slowStart){
+                windowSize*=2;
+                if(windowSize>=lastDropSeqNum){
+                    slowStart=false;
+                    windowSize=lastDropSeqNum;
+                }
+            }
+            else if(lastSeq==maxAck && !slowStart){
                 windowSize++;
             }
             else{
+                lastPackSent=false;
                 if(timeout){
                     windowSize=1;
                 }

@@ -39,7 +39,7 @@ public class AckPacket {
         //before calling make sure that both ackNum and ackByte are filled
         DatagramPacket ackPack=new DatagramPacket(this.ackByte, this.ackByte.length, ip, port);
         ds.send(ackPack);
-//        System.out.println("Sent Ack "+ackNum);
+        System.out.println("Sent Ack "+this.ackNum);
     }
     public boolean receiveAck(DatagramSocket ds) throws SocketException, IOException{
         DatagramPacket ackDatagramPacket = new DatagramPacket(this.ackByte, this.ackByte.length);

@@ -25,6 +25,7 @@ import java.util.logging.Logger;
  */
 public class Receiver {
     static int c_port;
+    static final int packetSize=1024;
     static InetAddress c_ip=null;
     public static void main(String args[]) throws IOException{
         Scanner input = new Scanner(System.in);
@@ -56,28 +57,32 @@ public class Receiver {
         int seqNum=0;
         int lastSeqNum=0;
         boolean file_flag=false;
+        boolean cumAck=false; //Not required
         boolean false_flag=true;
         while(!lastMessage){
-            byte[] message = new byte[1024];
-            byte[] fileArray = new byte[1021];
+            cumAck=true;
+            byte[] message = new byte[packetSize];
+            byte[] fileArray = new byte[packetSize-3];
             
             DatagramPacket receivedPacket = new DatagramPacket(message, message.length);
+            
             ds.setSoTimeout(0);
+            cumAck=false;
             ds.receive(receivedPacket);
-//            c_ip = receivedPacket.getAddress();
-//            c_port = receivedPacket.getPort();
+            c_ip = receivedPacket.getAddress();
+            c_port = receivedPacket.getPort();
             message = receivedPacket.getData();
             AckPacket ackPack=new AckPacket();
             Packet p=new Packet(message);
             seqNum=p.seqNum;
-            if(seqNum==123 && false_flag){
+            if(seqNum==136 && false_flag){
                 seqNum=2;
                 false_flag=false;
-//                continue;
+                continue;
             }
             if(seqNum==lastSeqNum+1){
                 lastSeqNum=seqNum;
-                for (int i=0; i < 1021 ; i++) {
+                for (int i=0; i < packetSize-3 ; i++) {
                     fileArray[i] = p.getPayload(i+3);
                 }
                 os.write(fileArray);

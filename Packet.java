@@ -37,7 +37,7 @@ public class Packet{
         else if(flag==0){
             this.lastFlag=false;
         }
-        System.out.println("Received: Sequence number = " + seqNum + ", Flag = " + lastFlag);
+        System.out.println("Sequence number Received = " + this.seqNum);
         
     }
     public void setFlag(boolean flag){
@@ -59,7 +59,10 @@ public class Packet{
     public void sendPacket(DatagramSocket ds, InetAddress ip, int port) throws IOException{
         DatagramPacket sendPacket = new DatagramPacket(message, message.length, ip, port);
         ds.send(sendPacket);
-        System.out.println("Sent: Sequence number = " + this.seqNum + ", Flag = " + this.lastFlag);
+        System.out.println("Sequence number Sent = " + this.seqNum);
+    }
+    public void dropPacket(){
+        System.out.println("Sequence number Dropped = " + this.seqNum);
     }
     
 }
