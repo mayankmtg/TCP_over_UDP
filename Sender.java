@@ -37,6 +37,17 @@ public class Sender {
         int port=input.nextInt();
         System.out.println("File Name:");
         String fileName=input.next();
+        System.out.println("Making Connection...");
+        SynPack sp=new SynPack(0);
+        System.out.println("Sending SYN");
+        sp.sendSyn(ds, ip, port);
+        SynPack synAckPack=new SynPack();
+        ds.setSoTimeout(0);
+        DatagramPacket type=synAckPack.receiveSyn(ds);
+
+        System.out.println("SYN-ACK Received\nSending ACK");
+        SynPack ackSyn=new SynPack(2);
+        ackSyn.sendSyn(ds, ip, port);
         System.out.println("Sending the file");
         
         File file = new File(fileName); 

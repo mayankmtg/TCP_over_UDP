@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +33,21 @@ public class Receiver {
         DatagramSocket ds = new DatagramSocket(port_addr);
         System.out.println("File Name:");
         String fileName=input.next();
-        InetAddress address;
+        System.out.println("Waiting for Connection");
+        SynPack syn=new SynPack();
+        ds.setSoTimeout(0);
+        DatagramPacket type=syn.receiveSyn(ds);
+        c_ip=type.getAddress();
+        c_port=type.getPort();
+        System.out.println("SYN Recieved");
+        SynPack synAck=new SynPack(1);
+        System.out.println("Sending SYN-ACK");
+        synAck.sendSyn(ds, c_ip, c_port);
+        SynPack ackSyn=new SynPack();
+        ds.setSoTimeout(0);
+        DatagramPacket ack_type=syn.receiveSyn(ds);
+        System.out.println("ACK Recieved");
+        
         File file = new File(fileName);
         FileOutputStream os = new FileOutputStream(file);
         
@@ -49,8 +64,8 @@ public class Receiver {
             DatagramPacket receivedPacket = new DatagramPacket(message, message.length);
             ds.setSoTimeout(0);
             ds.receive(receivedPacket);
-            c_ip = receivedPacket.getAddress();
-            c_port = receivedPacket.getPort();
+//            c_ip = receivedPacket.getAddress();
+//            c_port = receivedPacket.getPort();
             message = receivedPacket.getData();
             AckPacket ackPack=new AckPacket();
             Packet p=new Packet(message);
