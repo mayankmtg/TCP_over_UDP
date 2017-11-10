@@ -31,6 +31,7 @@ public class Sender_2015056 {
      */
     static final int packetSize=1024;
     static final double lossProb=0.1;
+    static int bufferSize=75;
     public static void main(String[] args) throws IOException{
         Scanner input = new Scanner(System.in);
         DatagramSocket ds = new DatagramSocket();
@@ -171,6 +172,7 @@ public class Sender_2015056 {
                     slowStart=true;
                     lastPackSent=false;
                     System.err.println("Time Out");
+                    Sender_2015056.bufferSize-=2;
                 }
             }
             if(lastSeq==maxAck && slowStart){
@@ -178,6 +180,18 @@ public class Sender_2015056 {
                 if(windowSize>=lastDropSeqNum){
                     slowStart=false;
                     windowSize=lastDropSeqNum;
+                }
+                if(windowSize>bufferSize){
+                    System.out.println("Flow Control");
+                    System.out.println("Window Size crossing buffer");
+                    try{
+                        System.out.println("...Sleeping...");
+                        Thread.sleep(200);
+                    }
+                    catch (Exception e){
+                        System.out.println(e);
+                    }
+                    windowSize=bufferSize;
                 }
             }
             else if(lastSeq==maxAck && !slowStart){
