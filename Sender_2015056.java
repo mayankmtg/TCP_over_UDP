@@ -89,7 +89,7 @@ public class Sender_2015056 {
         ArrayList<Integer> ackRegister=new ArrayList<Integer>();
         int start=0;
         boolean exitCondition=false;
-        int lastDropSeqNum=128;
+        int lastDropWindow=16;
         boolean lastPackSent=false;
         boolean slowStart=true; // TCP Slow Start
         while(!exitCondition){
@@ -164,22 +164,27 @@ public class Sender_2015056 {
                     if(fastRetransmitCounter==2){
                         consecAck=true;
                         lastPackSent=false;
+                        lastDropWindow=windowSize;
                         System.out.println("Fast Retransmit");
                     }
                 }
                 else{
-                    timeout=true;
-                    slowStart=true;
-                    lastPackSent=false;
-                    System.err.println("Time Out");
+                    if(!consecAck){
+                        timeout=true;
+                    
+                        slowStart=true;
+                        lastPackSent=false;
+                        lastDropWindow=windowSize;
+                        System.err.println("Time Out");
+                    }
                     Sender_2015056.bufferSize-=2;
                 }
             }
             if(lastSeq==maxAck && slowStart){
                 windowSize*=2;
-                if(windowSize>=lastDropSeqNum){
+                if(windowSize>=lastDropWindow){
                     slowStart=false;
-                    windowSize=lastDropSeqNum;
+                    windowSize=lastDropWindow;
                 }
                 if(windowSize>bufferSize){
                     System.out.println("Flow Control");
@@ -199,15 +204,15 @@ public class Sender_2015056 {
             }
             else{
                 lastPackSent=false;
-                if(timeout){
-                    windowSize=1;
-                }
-                else if(consecAck){
+                if(consecAck){
                     //fast Retransmit
                     windowSize=windowSize/2;
                     if(windowSize<1){
                         windowSize=1;
                     }
+                }
+                else if(timeout){
+                    windowSize=1;
                 }
             }
             start=maxAck;
